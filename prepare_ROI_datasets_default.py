@@ -241,18 +241,18 @@ def lambda_handler(event, context):
     
     s3_lambda_path = "https://lup4ldn-lambdas.s3.eu-central-1.amazonaws.com/"    
 
-    # for file in file_to_upload:
-    #     path_to_file_for_upload = path_to_tmp + file
-    #     target_bucket = "lup4ldn-lambdas"
+    for file in file_to_upload:
+        path_to_file_for_upload = path_to_tmp + file
+        target_bucket = "lup4ldn-lambdas"
     
-    #     object_name = project_id +  "/" + file
+        object_name = project_id +  "/" + file
         
-    #     # Upload the file
-    #     try:
-    #         response = s3.upload_file(path_to_file_for_upload, target_bucket, object_name)
-    # #         print("Uploaded file: " + file)
-    #     except ClientError as e:
-    #         logging.error(e)
+        # Upload the file
+        try:
+            response = s3.upload_file(path_to_file_for_upload, target_bucket, object_name)
+    #         print("Uploaded file: " + file)
+        except ClientError as e:
+            logging.error(e)
 
     my_output = {
     "land_cover" : s3_lambda_path + project_id + "/cropped_land_cover.tif",
