@@ -27,9 +27,9 @@ def lambda_handler(event, context):
 
 
     #for local
-    path_to_tmp = "/home/christos/Desktop/SCiO_Projects/lup4ldn/data/cropped_files/"
+    # path_to_tmp = "/home/christos/Desktop/SCiO_Projects/lup4ldn/data/cropped_files/"
     #for aws
-    # path_to_tmp = "/tmp/"
+    path_to_tmp = "/tmp/"
     
     # s3_file_path = '/vsis3/lup4ldn-dataset' + "/" + country_iso + "/"
     # s3_file_path = "https://lup4ldn-default-global-datasets.s3.eu-central-1.amazonaws.com/"
@@ -132,6 +132,8 @@ def lambda_handler(event, context):
     
     land_cover_array = np.expand_dims(land_cover_array,axis=0)
     
+    
+    
     # # read and concatenate the rest years, IF we want older years as well
     # for i in range(2019,2021):
     #     try:
@@ -227,6 +229,10 @@ def lambda_handler(event, context):
         0 : -32768
     }
     land_cover_array = map_land_cover_to_trendsearth_labels(land_cover_array,dict_labels_map_100m_to_trends)
+    
+    unique, counts = np.unique(land_cover_array, return_counts = True)
+    lc_hectares = dict(zip([str(x) for x in unique], 9 * [int(x) for x in counts]))
+    
         
     save_arrays_to_tif(save_land_cover_file,land_cover_array,land_cover_tif)
     
@@ -235,25 +241,27 @@ def lambda_handler(event, context):
     
     s3_lambda_path = "https://lup4ldn-lambdas.s3.eu-central-1.amazonaws.com/"    
 
-    for file in file_to_upload:
-        path_to_file_for_upload = path_to_tmp + file
-        target_bucket = "lup4ldn-lambdas"
+    # for file in file_to_upload:
+    #     path_to_file_for_upload = path_to_tmp + file
+    #     target_bucket = "lup4ldn-lambdas"
     
-        object_name = project_id +  "/" + file
+    #     object_name = project_id +  "/" + file
         
-        # Upload the file
-        try:
-            response = s3.upload_file(path_to_file_for_upload, target_bucket, object_name)
-    #         print("Uploaded file: " + file)
-        except ClientError as e:
-            logging.error(e)
+    #     # Upload the file
+    #     try:
+    #         response = s3.upload_file(path_to_file_for_upload, target_bucket, object_name)
+    # #         print("Uploaded file: " + file)
+    #     except ClientError as e:
+    #         logging.error(e)
 
     my_output = {
     "land_cover" : s3_lambda_path + project_id + "/cropped_land_cover.tif",
     "land_use" : s3_lambda_path + project_id + "/cropped_land_use.tif",
     "land_degradation" : s3_lambda_path + project_id + "/cropped_land_degradation.tif",
     "suitability" : s3_lambda_path + project_id + "/cropped_suitability.tif",
+    "land_cover_hectares_per_class" : lc_hectares
     }
+    
     
     return {
         "statusCode": 200,
@@ -268,55 +276,7 @@ def lambda_handler(event, context):
 # }
 
 
-
-
 # t = lambda_handler(json_file, 1)
-
-
-# {
-#     "body" :
-#     {
-#           "project_id": "some_projectID",
-#           "ROI": {
-#             "type": "FeatureCollection",
-#             "features": [
-#               {
-#                 "type": "Feature",
-#                 "properties": {
-                  
-#                 },
-#                 "geometry": {
-#                   "type": "Polygon",
-#                   "coordinates": [
-#                     [
-#                       [
-#                         10.15960693359375,
-#                         36.55598153635691
-#                       ],
-#                       [
-#                         10.987701416015625,
-#                         36.55598153635691
-#                       ],
-#                       [
-#                         10.987701416015625,
-#                         36.99816565700228
-#                       ],
-#                       [
-#                         10.15960693359375,
-#                         36.99816565700228
-#                       ],
-#                       [
-#                         10.15960693359375,
-#                         36.55598153635691
-#                       ]
-#                     ]
-#                   ]
-#                 }
-#               }
-#             ]
-#           }
-#        }
-#     }
 
 
 
