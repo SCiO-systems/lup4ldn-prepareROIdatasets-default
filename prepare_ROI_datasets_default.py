@@ -76,11 +76,13 @@ def lambda_handler(event, context):
         print(e)
         print("if ''NoneType' object has no attribute', probably the file path is wrong")
         
-        
+
+    
     gdal_warp_kwargs_target_area["height"] = y_ref
     gdal_warp_kwargs_target_area["width"] = x_ref
     
-    unique, counts = np.unique(ld_array, return_counts=True)
+    unique, counts = np.unique(ld_array.filled(), return_counts=True)
+
     try:
         improved_pixels = counts[np.where(unique==1)]
         if improved_pixels.size == 0:
@@ -99,6 +101,7 @@ def lambda_handler(event, context):
         print("Setting number of degraded pixels to 0")
         degraded_pixels = 0  
 
+    
     initial_roi_ld = int(9*(improved_pixels - degraded_pixels))
     
     
@@ -261,7 +264,7 @@ def lambda_handler(event, context):
     if -32768 in unique:
         unique = unique[1:]
         counts = counts[1:]
-    lc_hectares = dict(zip([str(x) for x in unique], 9 * [int(x) for x in counts]))
+    lc_hectares = dict(zip([str(x) for x in unique],  [9 * int(x) for x in counts]))
     
         
     save_arrays_to_tif(save_land_cover_file,land_cover_array,land_cover_tif)
@@ -296,11 +299,11 @@ def lambda_handler(event, context):
     #upload files
     file_to_upload = os.listdir(path_to_tmp)
     
-    s3_lambda_path = "https://lup4ldn-lambdas.s3.eu-central-1.amazonaws.com/"    
+    s3_lambda_path = "https://lup4ldn-prod.s3.us-east-2.amazonaws.com/"    
 
     for file in file_to_upload:
         path_to_file_for_upload = path_to_tmp + file
-        target_bucket = "lup4ldn-lambdas"
+        target_bucket = "lup4ldn-prod"
     
         object_name = project_id +  "/" + file
         
@@ -309,6 +312,7 @@ def lambda_handler(event, context):
             response = s3.upload_file(path_to_file_for_upload, target_bucket, object_name)
     #         print("Uploaded file: " + file)
         except ClientError as e:
+            print(e)
             logging.error(e)
 
     my_output = {
